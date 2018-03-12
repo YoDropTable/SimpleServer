@@ -39,8 +39,8 @@ public class AsynchronousSocketListener
         {
             Console.WriteLine(string.Format("myIp: {0} myFam: {1}", myIp, myIp.AddressFamily));
         }
-        IPAddress ipAddress = ipHostInfo.AddressList[3];
-        IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 8080);
+        IPAddress ipAddress = ipHostInfo.AddressList[2];
+        IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 1337);
 
         // Create a TCP/IP socket.  
         Socket listener = new Socket(ipAddress.AddressFamily,
@@ -109,13 +109,13 @@ public class AsynchronousSocketListener
         if (bytesRead > 0)
         {
             // There  might be more data, so store the data received so far.  
-            state.sb.Append(Encoding.ASCII.GetString(
+            state.sb.Append(Encoding.UTF8.GetString(
                 state.buffer, 0, bytesRead));
 
             // Check for end-of-file tag. If it is not there, read   
             // more data.  
             content = state.sb.ToString();
-            if (content.IndexOf("<EOF>") > -1)
+            if (content.IndexOf("\n") > -1)
             {
                 // All the data has been read from the   
                 // client. Display it on the console.  
@@ -135,8 +135,8 @@ public class AsynchronousSocketListener
 
     private static void Send(Socket handler, String data)
     {
-        // Convert the string data to byte data using ASCII encoding.  
-        byte[] byteData = Encoding.ASCII.GetBytes(data);
+        // Convert the string data to byte data using UTF8 encoding.  
+        byte[] byteData = Encoding.UTF8.GetBytes(data);
 
         // Begin sending the data to the remote device.  
         handler.BeginSend(byteData, 0, byteData.Length, 0,
