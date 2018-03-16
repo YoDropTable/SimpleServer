@@ -18,7 +18,6 @@ namespace ConsoleApplication1
             {
                 Console.WriteLine(string.Format("myIp: {0} myFam: {1}", myIp, myIp.AddressFamily));
             }
-            IPAddress ipAddress = ipHostInfo.AddressList[2];
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 1337);
             Console.WriteLine(string.Format("My IP ADDRESS: {0}", localEndPoint));
             TcpListener serverSocket = new TcpListener(localEndPoint);
@@ -73,12 +72,13 @@ namespace ConsoleApplication1
                         byte[] myReadBuffer = new byte[1024];
                         StringBuilder myCompleteMessage = new StringBuilder();
                         int numberOfBytesRead = 0;
+                        long bytesToRead = networkStream.Read(myReadBuffer, 0, 8);
                         do
                         {
-                            numberOfBytesRead = networkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            numberOfBytesRead += networkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
                             myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
                         }
-                        while (networkStream.DataAvailable);
+                        while (networkStream.DataAvailable & bytesToRead < numberOfBytesRead);
                         if (numberOfBytesRead > 0)
                         {
                             string temp = myCompleteMessage.ToString();
