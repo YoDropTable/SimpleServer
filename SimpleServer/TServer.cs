@@ -73,22 +73,30 @@ namespace ConsoleApplication1
                         byte[] myReadBuffer = new byte[1024];
                         StringBuilder myCompleteMessage = new StringBuilder();
                         int numberOfBytesRead = 0;
+                        string myMessage;
                         do
                         {
-                            numberOfBytesRead = networkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
-                            myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
+                            byte[] getLenBytes = new byte[4];
+                            networkStream.Read(getLenBytes, 0, 4);
+                            numberOfBytesRead = BitConverter.ToInt32(getLenBytes, 0);
+                            byte[] getBytes = new byte[numberOfBytesRead];
+                            networkStream.Read(getBytes, 0, numberOfBytesRead);
+                            //myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(getBytes, 0, getBytes));
+                            myMessage = Encoding.UTF8.GetString(getBytes);
                         }
                         while (networkStream.DataAvailable);
                         if (numberOfBytesRead > 0)
                         {
-                            string temp = myCompleteMessage.ToString();
+                            string temp = myMessage;
                             Console.WriteLine(" >> " + "From client-" + temp + " " + DateTime.Now);
                             string[] myCommand = temp.Split(' ');
                             if (myCommand[0].Contains("Connect"))
                         {
                                 Console.WriteLine("Client Connected " + clientSocket.Client.RemoteEndPoint + " " +  DateTime.Now);
-                                string serverResponse = "404 OK\r\n";
+                                string serverResponse = "404 OK";
                                 byte[] sendBytes = Encoding.UTF8.GetBytes(serverResponse);
+                                byte[] num = System.BitConverter.GetBytes(sendBytes.Length);
+                                networkStream.Write(num, 0, 4);
                                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                             }
                             else if (myCommand[0].Contains("Disconnect"))
@@ -97,7 +105,6 @@ namespace ConsoleApplication1
                                 Console.Write("Client D/C " + clientSocket.Client.RemoteEndPoint + " " + DateTime.Now);
                             }
                             //networkStream.Flush();
-                            
                         }
                     }
                 }
